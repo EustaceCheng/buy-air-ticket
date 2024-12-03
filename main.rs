@@ -5,14 +5,13 @@ use reqwest::header::{
 use serde_json::json;
 use serde_json::Value;
 use std::error::Error;
+use chrono::{Duration, Utc};
 
-const SESSION_ID: &str = "674d1b024d9ff77cc404e054";
+const SESSION_ID: &str = "674d65d6c41c38dc5903809c";
 const ORIGIN_AIRPORT: &str = "FUK";
 const DESTINATION_AIRPORT: &str = "TPE";
 const USER_CURRENCY: &str = "TWD";
 const PRICING_CURRENCY: &str = "TWD";
-const SINCE: &str = "2025-03-01";
-const UNTIL: &str = "2025-03-29";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -60,6 +59,9 @@ async fn fetch_and_display_top_10() -> Result<(), Box<dyn Error>> {
     );
     headers.insert("x-language", HeaderValue::from_static("zh-TW"));
 
+
+    let (since, until) = get_date_range();
+
     // 設置 body 資料
     let body = json!({
         "operationName": "appLiveDailyPrices",
@@ -70,8 +72,8 @@ async fn fetch_and_display_top_10() -> Result<(), Box<dyn Error>> {
                 "destination": DESTINATION_AIRPORT,
                 "userCurrency": USER_CURRENCY,
                 "pricingCurrency": PRICING_CURRENCY,
-                "since": SINCE,
-                "until": UNTIL,
+                "since": since,
+                "until": until,
                 "source": "resultPagePriceBrick"
             }
         },
@@ -130,3 +132,13 @@ async fn fetch_and_display_top_10() -> Result<(), Box<dyn Error>> {
     table.printstd();
     Ok(())
 }
+
+
+fn get_date_range() -> (String, String) {
+    let since = Utc::now().date_naive()+ Duration::days(30);
+    let until = since + Duration::days(87);
+    (since.to_string(), until.to_string())
+}
+
+
+
